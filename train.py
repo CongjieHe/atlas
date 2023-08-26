@@ -7,6 +7,7 @@
 import os
 import time
 from collections import defaultdict
+from tqdm import tqdm
 
 import numpy as np
 import torch
@@ -58,13 +59,17 @@ def train(
         )
         data_iterator = filter(None, map(task.process, data_iterator))
         data_iterator = task.batch_iterator(data_iterator, opt.per_gpu_batch_size, drop_last=True, shuffle=opt.shuffle)
+        task_num_per_rank = task.get_task_length(opt.train_data, opt.world_size, opt.per_gpu_batch_size)
+        
+        tqdm_bar = tqdm(total=task_num_per_rank, desc="Training process in {}th-step, {}-th rank".format(step, dist_utils.get_rank()), position=dist_utils.get_rank())
         for i, batch in enumerate(data_iterator):
-
+            tqdm_bar.update(1)
             iter_stats = {}
             model.train()
             if not opt.use_file_passages and index_refresh_scheduler.is_time_to_refresh(step):
 
                 if not (step == 0 and opt.load_index_path is not None):  # Dont refresh index if just loaded it
+                    logger.info("Refreshing index in step {}".format(step))
                     indexing_start = time.time()
                     unwrapped_model.build_index(index, passages, opt.per_gpu_embedder_batch_size, logger)
                     iter_stats["runtime/indexing"] = (time.time() - indexing_start, 1)

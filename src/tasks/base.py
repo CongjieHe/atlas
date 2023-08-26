@@ -19,6 +19,16 @@ class BaseTask(object):
 
     def __init__(self, *args, **kwargs):
         self.filter = None
+        
+    @staticmethod
+    def get_task_length(filenames, world_size=-1, batch_size=-1):
+        length = 0
+        for filename in filenames:
+            length += len(open(filename, encoding="utf-8").readlines())
+        batch_num = length // batch_size
+        if world_size > 0:
+            batch_num = batch_num // world_size
+        return batch_num
 
     @staticmethod
     def data_iterator(filenames, world_rank=-1, world_size=-1, repeat_if_less_than_world_size=False, *args, **kwargs):

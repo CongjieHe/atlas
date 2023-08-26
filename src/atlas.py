@@ -10,6 +10,7 @@ import math
 import time
 from functools import reduce
 from typing import List, Optional, Union
+from tqdm import tqdm
 
 import numpy as np
 import torch
@@ -64,7 +65,9 @@ class Atlas(nn.Module):
         retrieverfp16 = self._get_fp16_retriever_copy()
 
         total = 0
+        tqdm_bar = tqdm(total=n_batch, desc="Updating index in {}-th rank".format(dist_utils.get_rank()), position=dist_utils.get_rank())
         for i in range(n_batch):
+            tqdm_bar.update(1)
             batch = passages[i * gpu_embedder_batch_size : (i + 1) * gpu_embedder_batch_size]
             batch = [self.opt.retriever_format.format(**example) for example in batch]
             batch_enc = self.retriever_tokenizer(
