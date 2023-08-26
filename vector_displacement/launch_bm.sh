@@ -6,13 +6,13 @@ MASTER_PORT="29500"
 MASTER_ADDR="localhost"
 
 # Prepare train/dev/test data from corpus:
-TEXTS="${DATA_DIR}/corpora/wiki/enwiki-dec2018_sampled/text-list-100-sec_sampled.jsonl"
-INFOBOXES="${DATA_DIR}/corpora/wiki/enwiki-dec2018_sampled/infobox_sampled.jsonl"
+TEXTS="${DATA_DIR}/corpora/wiki/enwiki-dec2018_sampled/text-list-100-sec_0.1sampled.jsonl"
+INFOBOXES="${DATA_DIR}/corpora/wiki/enwiki-dec2018_sampled/infobox_0.1sampled.jsonl"
 
 TRAIN_FILES="${TEXTS}.shuf.train ${INFOBOXES}.shuf.train"
 EVAL_FILES="${TEXTS}.shuf.valid ${INFOBOXES}.shuf.valid ${TEXTS}.shuf.test ${INFOBOXES}.shuf.test"
 SAVE_DIR=${DATA_DIR}/experiments/
-EXPERIMENT_NAME=${size}-wiki-mlm-pretrain_sampled
+EXPERIMENT_NAME=${size}-wiki-mlm-pretrain_0.1sampled
 PRECISION="fp16" # "bf16"
 
 
@@ -46,4 +46,4 @@ torchrun --nproc_per_node=4 --nnodes=1 --node_rank=0 --master_addr=${MASTER_ADDR
     --task "lm" \
     --min_lm_context_ratio 0.25 --max_lm_context_ratio 0.75 \
     --save_index_path ${SAVE_DIR}${EXPERIMENT_NAME}/index \
-    --per_gpu_embedder_batch_size 1024 \
+    --per_gpu_embedder_batch_size 512 \
