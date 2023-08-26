@@ -115,28 +115,20 @@ def init_distributed_mode(params):
         params.is_distributed = True
 
     # multi-GPU job (local or multi-node) - jobs started with torch.distributed.launch
-    elif has_local_rank and params.local_rank != -1:
+    else:
 
         assert params.main_port == -1
 
         # read environment variables
         params.global_rank = int(os.environ["RANK"])
         params.world_size = int(os.environ["WORLD_SIZE"])
-        params.n_gpu_per_node = int(os.environ["NGPU"])
+        params.n_gpu_per_node = int(os.environ["LOCAL_WORLD_SIZE"])
+        params.local_rank = int(os.environ["LOCAL_RANK"])
 
         # number of nodes / node ID
         params.n_nodes = params.world_size // params.n_gpu_per_node
         params.node_id = params.global_rank // params.n_gpu_per_node
         params.is_distributed = True
-
-    else:
-        params.local_rank = 0
-        params.global_rank = 0
-        params.world_size = 1
-        params.is_distributed = False
-        params.n_nodes = 1
-        params.node_id = 0
-        params.n_gpu_per_node = 1
 
     # define whether this is the master process / if we are in distributed mode
     params.is_main = params.node_id == 0 and params.local_rank == 0
